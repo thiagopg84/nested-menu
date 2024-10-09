@@ -11,6 +11,7 @@ import { IPermissions, ScreenPermissions } from '../../enums/permissions.enum';
 import { CommonModule } from '@angular/common';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-menu',
@@ -18,15 +19,29 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
+  animations: [
+    trigger('slideToggle', [
+      state('closed', style({
+        height: '0px',
+        opacity: 1,
+      })),
+      state('open', style({
+        height: '*',
+        opacity: 1
+      })),
+      transition('closed <=> open', [
+        animate('300ms ease-in-out')
+      ])
+    ])
+  ]
 })
 export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   destroy$ = new Subject<void>();
-  currentRoute: string = '';
-  currentLink!: MenuItem;
   menu: MenuItem[] = [
     {
       title: 'DASHBOARD',
       icon: 'browser-outline',
+      link: 'dashboard'
     },
     {
       title: 'RESOURCE',
@@ -117,9 +132,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   isMenuLoaded: boolean = false;
 
   constructor(
-    private router: Router,
-    private element: ElementRef,
-    private renderer: Renderer2
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -140,99 +153,24 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe((event: any) => {
-        this.currentRoute = event.url;
-        this.createIdsForMenuItems();
-        this.getCurrentLink();
+        this.openMenusForActiveRoute(this.menu, event.url);
       });
   }
 
-  getCurrentLink(): void {
-    const findLink = (menuItems: MenuItem[]): MenuItem | undefined => {
-      for (let item of menuItems) {
-        if (item.link === this.currentRoute) return item;
+  toggleMenuItem(menuItem: any) {
+    menuItem.expanded = !menuItem.expanded;
+  }
 
-        if (item.children) {
-          let menuItem: MenuItem | undefined = findLink(item.children);
-          if (menuItem) return menuItem;
+  openMenusForActiveRoute(menuItems: MenuItem[], currentUrl: string): void {
+    for (const item of menuItems) {
+      if (item.link === currentUrl) {
+        item.expanded = true;
+      } else if (item.children) {
+        this.openMenusForActiveRoute(item.children, currentUrl);
+        if (item.children.some(child => child.expanded)) {
+          item.expanded = true;
         }
       }
-      return undefined;
-    };
-    const currentLink = findLink(this.menu);
-    if (currentLink) {
-      this.currentLink = currentLink;
-
-      setTimeout(() => {
-        this.openParentsAndClick(currentLink);
-      }, 0);
     }
-  }
-
-  openParentsAndClick(currentLink: MenuItem): void {
-    const pathToLink: MenuItem[] = this.getPathToLink(this.menu, currentLink);
-    let parentElement: HTMLElement | null = null;
-    pathToLink.forEach((menuItem, index) => {
-      if (index === 0) {
-        parentElement = this.element.nativeElement.querySelector(
-          `[data-link="${menuItem.id}"]`
-        ) as HTMLElement;
-      } else {
-        parentElement = parentElement?.nextElementSibling?.querySelector(
-          `[data-link="${menuItem.id}"]`
-        ) as HTMLElement;
-      }
-      if (parentElement) {
-        const ulElementRef = parentElement.nextElementSibling as HTMLElement;
-        if (ulElementRef && ulElementRef.tagName === 'UL') {
-          ulElementRef.classList.add('active');
-          ulElementRef.style.maxHeight = `${ulElementRef.scrollHeight}px`;
-        }
-      }
-    });
-  }
-
-  getPathToLink(menuItems: MenuItem[], targetLink: MenuItem): MenuItem[] {
-    for (let item of menuItems) {
-      if (item.id === targetLink.id) return [item];
-
-      if (item.children) {
-        let childPath = this.getPathToLink(item.children, targetLink);
-        if (childPath.length) return [item, ...childPath];
-      }
-    }
-    return [];
-  }
-
-  handleLinkClick(menuItemRef: HTMLElement, menuItem: MenuItem) {
-    if (menuItem.children) {
-      const ulElementRef = menuItemRef.nextElementSibling;
-      if (!ulElementRef) return;
-      const classList = ulElementRef?.classList;
-      if (!classList.contains('active')) {
-        classList.add('active');
-        const scrollHeight = (ulElementRef as any).scrollHeight;
-        (ulElementRef as any)['style'] = `max-height: ${scrollHeight}px`;
-      } else {
-        classList.remove('active');
-        (ulElementRef as any)['style'] = '';
-      }
-    }
-  }
-
-  createIdsForMenuItems(): void {
-    const iterator = (menuItems: MenuItem[]) => {
-      menuItems.map((item) => {
-        item.id = this.generateId();
-        if (item.children?.length) iterator(item.children);
-        return item;
-      });
-      return menuItems;
-    };
-    this.menu = iterator(this.menu);
-    this.isMenuLoaded = true;
-  }
-
-  generateId(): string {
-    return `item_${Math.random().toString(16).slice(2)}`;
   }
 }

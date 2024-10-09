@@ -1,5 +1,3 @@
-@if (isMenuLoaded) {
-
 <ul class="parent">
   @for (menuItem of menu; track $index) {
   <ng-container *ngTemplateOutlet="menuItemRef; context: { menuItem }" />
@@ -7,17 +5,15 @@
 </ul>
 
 <ng-template #menuItemRef let-menuItem="menuItem">
-  <li [ngClass]="{
-      'has-item': !!menuItem.icon
-    }">
-    <a #link [attr.data-link]="menuItem.id" (click)="handleLinkClick(link, menuItem)" routerLinkActive="active-route"
+  <li [attr.data-expanded]="menuItem.expanded ? true : false">
+    <a #link [attr.data-link]="menuItem.id" (click)="toggleMenuItem(menuItem)" routerLinkActive="active-route"
       [routerLink]="menuItem.link ?? null">
-      @if (menuItem.icon) {
+      <!-- @if (menuItem.icon) {
       <img [src]="menuItem.icon">
-      }
+      } -->
       {{ menuItem.title }}</a>
     @if (menuItem.children?.length) {
-    <ul>
+    <ul [@slideToggle]="menuItem.expanded ? 'open' : 'closed'">
       @for (subMenuItem of menuItem.children; track $index) {
       <ng-container *ngTemplateOutlet="menuItemRef; context: { menuItem: subMenuItem }" />
       }
@@ -25,4 +21,3 @@
     }
   </li>
 </ng-template>
-}
