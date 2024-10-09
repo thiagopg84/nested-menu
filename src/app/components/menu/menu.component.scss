@@ -1,0 +1,24 @@
+ul.parent {
+  max-width: max-content;
+  list-style-type: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    a {
+      cursor: pointer;
+      &.active-route {
+        color: red;
+      }
+    }
+
+    ul {
+      max-height: 0px;
+      overflow-y: hidden;
+      transition: max-height 0.15s ease-out;
+    }
+  }
+}

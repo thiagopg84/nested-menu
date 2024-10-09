@@ -1,0 +1,28 @@
+@if (isMenuLoaded) {
+
+<ul class="parent">
+  @for (menuItem of menu; track $index) {
+  <ng-container *ngTemplateOutlet="menuItemRef; context: { menuItem }" />
+  }
+</ul>
+
+<ng-template #menuItemRef let-menuItem="menuItem">
+  <li [ngClass]="{
+      'has-item': !!menuItem.icon
+    }">
+    <a #link [attr.data-link]="menuItem.id" (click)="handleLinkClick(link, menuItem)" routerLinkActive="active-route"
+      [routerLink]="menuItem.link ?? null">
+      @if (menuItem.icon) {
+      <img [src]="menuItem.icon">
+      }
+      {{ menuItem.title }}</a>
+    @if (menuItem.children?.length) {
+    <ul>
+      @for (subMenuItem of menuItem.children; track $index) {
+      <ng-container *ngTemplateOutlet="menuItemRef; context: { menuItem: subMenuItem }" />
+      }
+    </ul>
+    }
+  </li>
+</ng-template>
+}
