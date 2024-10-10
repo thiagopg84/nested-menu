@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { ItemsService } from '../../services/items.service';
 
 @Component({
   selector: 'app-menu',
@@ -34,103 +35,81 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   ]
 })
 export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
-  destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
+  loading = false;
+  collapsed = false;
   menu: MenuItem[] = [
     {
-      title: 'DASHBOARD',
-      icon: 'browser-outline',
-      link: 'dashboard'
+      title: 'Item 1',
+      children: [],
+      id: '1'
     },
     {
-      title: 'RESOURCE',
-      icon: 'layers-outline',
-      children: [
-        {
-          title: 'TENANTS',
-          children: [
-            {
-              title: 'CAMERAS',
-            },
-            {
-              title: 'HOME',
-              link: '/home',
-              data: ScreenPermissions.VIEW_HOME,
-            },
-          ],
-        },
-        {
-          title: 'CAMERAS',
-          link: '/resource/cameras',
-          data: IPermissions.LIST_CAMERAS,
-        },
-        {
-          title: 'STRUCTURE_ITEMS',
-          link: '/resource/structure-items',
-          data: IPermissions.LIST_STRUCTURE_ITEMS,
-        },
-        {
-          title: 'CONTRACTS',
-          link: '/resource/contracts',
-          data: IPermissions.LIST_CONTRACTS,
-        },
-      ],
+      title: 'Item 2',
+      children: [],
+      id: '2'
     },
     {
-      title: 'CONFIGURATION',
-      icon: 'settings-outline',
-      children: [
-        {
-          title: 'HIERARCHY',
-          link: '/config/structures',
-          data: IPermissions.ADD_STRUCTURES,
-        },
-        {
-          title: 'SERVERS',
-          link: '/config/servers',
-          data: IPermissions.LIST_SERVERS,
-        },
-        {
-          title: 'IMPLANTATION',
-          link: '/config/implantation',
-          data: ScreenPermissions.VIEW_IMPLANTATION,
-        },
-        {
-          title: 'GENERAL_PARAMS',
-          link: '/config/general-params',
-          data: 'viewGeneralParams',
-        },
-        {
-          title: 'SYSTEM',
-          link: '/config/system',
-          data: IPermissions.CONFIGURE_WHITELABEL,
-        },
-        {
-          title: 'CUSTOMIZATION',
-          link: '/config/customization',
-          data: IPermissions.CONFIGURE_WHITELABEL,
-        },
-        {
-          title: 'CONTRACT_TEMPLATES',
-          link: '/config/contract-templates',
-          data: IPermissions.LIST_CONTRACT_TEMPLATES,
-        },
-        {
-          title: 'PROFILES',
-          link: '/config/profiles',
-          data: IPermissions.LIST_PROFILES,
-        },
-        {
-          title: 'USERS',
-          link: '/config/users',
-          data: IPermissions.LIST_USERS,
-        },
-      ],
+      title: 'Item 3',
+      children: [],
+      id: '3'
     },
-  ];
+    {
+      title: 'Item 4',
+      children: [],
+      id: '4'
+    },
+    {
+      title: 'Item 5',
+      children: [],
+      id: '5'
+    },
+    {
+      title: 'Item 6',
+      children: [],
+      id: '6'
+    },
+    {
+      title: 'Item 7',
+      children: [],
+      id: '7'
+    },
+    {
+      title: 'Item 8',
+      children: [],
+      id: '8'
+    },
+    {
+      title: 'Item 9',
+      children: [],
+      id: '9'
+    },
+    {
+      title: 'Item 10',
+      children: [],
+      id: '10'
+    },
+    {
+      title: 'Item 11',
+      children: [],
+      id: '11'
+    },
+    {
+      title: 'Item 12',
+      children: [],
+      id: '12'
+    },
+    {
+      title: 'Item 13',
+      children: [],
+      id: '13'
+    }
+  ]
   isMenuLoaded: boolean = false;
 
   constructor(
-    private router: Router
+    private router: Router,
+    private items: ItemsService
   ) {}
 
   ngOnInit(): void {
@@ -156,7 +135,22 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   toggleMenuItem(menuItem: MenuItem) {
-    menuItem.expanded = !menuItem.expanded;
+    if (menuItem.loadedChildren) {
+      menuItem.expanded = !menuItem.expanded;
+      if (!menuItem.expanded) {
+        this.collapseChildren(menuItem);
+      }
+      return;
+    }
+    this.loading = true;
+    this.items.getItems(menuItem).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (children) => {
+        menuItem.children = children;
+        this.loading = false;
+        menuItem.expanded = true;
+        menuItem.loadedChildren = true;
+      }
+    })
   }
 
   openMenusForActiveRoute(menuItems: MenuItem[], currentUrl: string): void {
@@ -170,5 +164,18 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     }
+  }
+
+  collapseChildren(menuItem: MenuItem): void {
+    menuItem.children?.forEach(e => {
+      e.expanded = false;
+      if (e.children?.length) {
+        this.collapseChildren(e);
+      }
+    })
+  }
+
+  collapseAll(): void {
+    this.collapsed = !this.collapsed;
   }
 }

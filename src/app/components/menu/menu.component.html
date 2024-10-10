@@ -1,4 +1,7 @@
-<ul class="parent">
+<button (click)="collapseAll()">collapse</button>
+<ul class="parent" [ngClass]="{
+  'collapsed': collapsed
+}">
   @for (menuItem of menu; track $index) {
   <ng-container *ngTemplateOutlet="menuItemRef; context: { menuItem }" />
   }
@@ -6,18 +9,20 @@
 
 <ng-template #menuItemRef let-menuItem="menuItem">
   <li [attr.data-expanded]="menuItem.expanded ? true : false">
-    <a #link [attr.data-link]="menuItem.id" routerLinkActive="active-route"
-      [routerLink]="menuItem.link ?? null">
-      <!-- @if (menuItem.icon) {
-      <img [src]="menuItem.icon">
-      } -->
-      {{ menuItem.title }}
-      @if (menuItem.children?.length) {
+    <div class="menu-item">
+      <a #link [attr.data-link]="menuItem.id" routerLinkActive="active-route"
+        [routerLink]="'home/' + menuItem.id">
+        <!-- @if (menuItem.icon) {
+        <img [src]="menuItem.icon">
+        } -->
+        {{ menuItem.title }}
+      </a>
+      @if (!menuItem.loadedChildren || menuItem.children?.length) {
         <button #expandBtn class="expand-button" [ngClass]="{
           'active': menuItem.expanded
-        }" (click)="toggleMenuItem(menuItem)">\/</button>
+        }" (click)="toggleMenuItem(menuItem)" [disabled]="loading">▾</button>
       }
-    </a>
+    </div>
 
     @if (menuItem.children?.length) {
     <ul [@slideToggle]="menuItem.expanded ? 'open' : 'closed'">

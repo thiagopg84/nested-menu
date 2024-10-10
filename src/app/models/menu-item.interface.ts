@@ -11,4 +11,5 @@ export interface MenuItem {
   children?: MenuItem[];
   data?: string;
   id?: string;
+  loadedChildren?: boolean;
 }

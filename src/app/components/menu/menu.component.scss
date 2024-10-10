@@ -8,14 +8,23 @@ ul {
   margin: 0;
   padding-left: 20px;
   overflow: hidden;
+  transition: padding-left .2s;
+
+  ul {
+    padding-top: .25rem;
+  }
 }
 
-a {
-  cursor: pointer;
-  text-decoration: none;
-  color: #333;
+.menu-item {
   display: flex;
   align-items: center;
+  gap: .5rem;
+
+  a {
+    cursor: pointer;
+    text-decoration: none;
+    color: #333;
+  }
 }
 
 li {
@@ -28,11 +37,25 @@ li {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: transform .2s;
-  background-color: transparent;
+  transition: transform 0.2s;
+  background-color: #4d796b;
   cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  color: #fff;
 
   &.active {
     transform: rotate(180deg);
+  }
+
+  &:disabled {
+    opacity: .25;
+  }
+}
+
+.collapsed {
+  ul {
+    padding-left: 0;
   }
 }
