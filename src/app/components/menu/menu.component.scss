@@ -8,11 +8,7 @@ ul {
   margin: 0;
   padding-left: 20px;
   overflow: hidden;
-  transition: padding-left .2s;
-
-  ul {
-    padding-top: .25rem;
-  }
+  transition: padding-left .2s, padding-top .2s;
 }
 
 .menu-item {
@@ -29,6 +25,11 @@ ul {
 
 li {
   margin-bottom: 5px;
+  &[data-expanded="true"] {
+    >ul {
+      padding-top: .25rem;
+    }
+  }
 }
 
 .expand-button {
