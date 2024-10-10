@@ -1,10 +1,8 @@
 import {
   AfterViewInit,
   Component,
-  ElementRef,
   OnDestroy,
   OnInit,
-  Renderer2,
 } from '@angular/core';
 import { MenuItem } from '../../models/menu-item.interface';
 import { IPermissions, ScreenPermissions } from '../../enums/permissions.enum';
@@ -157,7 +155,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  toggleMenuItem(menuItem: any) {
+  toggleMenuItem(menuItem: MenuItem) {
     menuItem.expanded = !menuItem.expanded;
   }
 

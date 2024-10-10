@@ -6,12 +6,19 @@
 
 <ng-template #menuItemRef let-menuItem="menuItem">
   <li [attr.data-expanded]="menuItem.expanded ? true : false">
-    <a #link [attr.data-link]="menuItem.id" (click)="toggleMenuItem(menuItem)" routerLinkActive="active-route"
+    <a #link [attr.data-link]="menuItem.id" routerLinkActive="active-route"
       [routerLink]="menuItem.link ?? null">
       <!-- @if (menuItem.icon) {
       <img [src]="menuItem.icon">
       } -->
-      {{ menuItem.title }}</a>
+      {{ menuItem.title }}
+      @if (menuItem.children?.length) {
+        <button #expandBtn class="expand-button" [ngClass]="{
+          'active': menuItem.expanded
+        }" (click)="toggleMenuItem(menuItem)">\/</button>
+      }
+    </a>
+
     @if (menuItem.children?.length) {
     <ul [@slideToggle]="menuItem.expanded ? 'open' : 'closed'">
       @for (subMenuItem of menuItem.children; track $index) {
